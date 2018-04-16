@@ -1,0 +1,19 @@
+<package>
+  <description brief="pf_example">
+
+     pf_example
+
+  </description>
+  <author>Cedric Pradalier</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/pf_example</url>
+  <depend package="roscpp"/>
+  <depend package="geometry_msgs"/>
+  <depend package="sensor_msgs"/>
+  <depend package="tf"/>
+
+  <rosdep name="gsl"/>
+</package>
+
+

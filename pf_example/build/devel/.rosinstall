@@ -1,0 +1,2 @@
+- setup-file:
+    local-name: /home/huier/Projects/comp6211c/catkin_ws/src/pf_example/build/devel/setup.sh

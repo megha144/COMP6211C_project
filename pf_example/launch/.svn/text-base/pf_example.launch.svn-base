@@ -1,0 +1,12 @@
+<launch>
+    <node type="simulator" pkg="pf_example" name="simulator">
+    </node>
+
+    <node type="localisation" pkg="pf_example" name="localisation">
+        <param name="num_particles" value="500"/>
+    </node>
+
+    <node type="rviz" pkg="rviz" name="rviz" args="--display-config $(find pf_example)/rviz_config.vcg">
+    </node>
+    
+</launch>
