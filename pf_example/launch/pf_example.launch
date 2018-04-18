@@ -3,7 +3,7 @@
     </node>
 
     <node type="localisation" pkg="pf_example" name="localisation">
-        <param name="num_particles" value="500"/>
+        <param name="num_particles" value="2000"/>
     </node>
 
     <node type="rviz" pkg="rviz" name="rviz" args="--display-config $(find pf_example)/hk.rviz">
