@@ -1,8 +1,8 @@
-#ELEC6910R, COMP6211C Course Project
+# ELEC6910R, COMP6211C Course Project
 Teaching Assitant: HUANG, Kan
 Members: Chen Yau Pun, Lei Zhao, Yang Shaohui
 
-##Enviroment
+## Enviroment
 The newest version of regarding softwares is recommended.
 
 - [ROS: Kinetic](http://wiki.ros.org/kinetic)
@@ -15,7 +15,7 @@ The newest version of regarding softwares is recommended.
 
 - Platform: Ubuntu 16.04 LTS
 
-###Configuration 
+## Configuration 
 1. Download vrep 3.5.0 
 
 2. Add the line `export VREP_ROOT_DIR=/ChangeWithyourPathToVrep/` to ~/.bashrc
@@ -26,7 +26,7 @@ The newest version of regarding softwares is recommended.
 
 5. Go to the location of vrep and run `ln -s /YOUR_CATKIN_WS_PATH/devel/lib/libv_repExtRosBridge.so`
 
-###Demo
+## Demo
 
 After configing the environment, run
 ```
