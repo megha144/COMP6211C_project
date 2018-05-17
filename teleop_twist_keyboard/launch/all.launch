@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+
+<launch>
+    <include file="$(find hector_mapping)/launch/mapping_default.launch"/>
+    <node name="keyboard_controller" pkg="teleop_twist_keyboard" type="teleop_twist_keyboard.py" />
+    <node name="rviz" pkg="rviz" type="rviz" />
+    <node name="image_converter" pkg="image_converter" type="image_converter.py">
+        <param name="path" value="/home/huier/Projects/comp6211c/catkin_ws/src/picture" />
+    </node>
+</launch>
