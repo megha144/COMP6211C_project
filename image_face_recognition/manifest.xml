@@ -1,13 +1,13 @@
 <package>
   <description brief="image_face_recognition">
 
-     image_converter
+     image_face_recognition
 
   </description>
   <author>Yang Shaohui</author>
   <license>BSD</license>
   <review status="unreviewed" notes=""/>
-  <url>http://ros.org/wiki/image_converter</url>
+  <url>http://ros.org/wiki/image_face_recognition</url>
   <depend package="sensor_msgs"/>
   <depend package="opencv3"/>
   <depend package="cv_bridge"/>

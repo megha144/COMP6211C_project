@@ -4,7 +4,7 @@
     <include file="$(find hector_mapping)/launch/mapping_default.launch"/>
     <node name="keyboard_controller" pkg="teleop_twist_keyboard" type="teleop_twist_keyboard.py" />
     <node name="rviz" pkg="rviz" type="rviz" />
-    <node name="image_converter" pkg="image_converter" type="image_converter.py">
+    <node name="image_face_recognition" pkg="image_face_recognition" type="image_face_recognition.py">
         <param name="path" value="/home/huier/Projects/comp6211c/catkin_ws/src/picture" />
     </node>
 </launch>
