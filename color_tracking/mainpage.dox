@@ -1,0 +1,14 @@
+/**
+\mainpage
+\htmlinclude manifest.html
+
+\b color_tracking 
+
+<!-- 
+Detects a yellow ball using HSV and tracks it using a PD controller
+-->
+
+-->
+
+
+*/
