@@ -1,0 +1,14 @@
+<package>
+  <description brief="demo">
+
+     demo
+
+  </description>
+  <author>Yang Shaohui</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/demo</url>
+
+</package>
+
+
