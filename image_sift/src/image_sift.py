@@ -13,23 +13,30 @@ from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
 import os
 import numpy as np
+from geometry_msgs.msg import Point32, PointStamped
+from sensor_msgs.msg import PointCloud
+import tf
 
 
 class image_sift:
     def __init__(self):
         rospy.loginfo('Initializing image sift')
-        self.image_pub = rospy.Publisher("/processed_image", Image, queue_size=1)
+        self.image_pub = rospy.Publisher("/processed_image_sift", Image, queue_size=1)
         self.laser_bool_pub = rospy.Publisher("/vrep/laser_switch", Bool, queue_size=1)
+        self.point_cloud_pub = rospy.Publisher("/image_point_cloud", PointCloud, queue_size=1)
 
         self.bridge = CvBridge()
         self.image_sub = rospy.Subscriber("/vrep/image", Image, self.callback)
         self.subjects = ["Barack Obama", "Avril Lavigne", "Zhang Guorong", "Legolas", "Levi Rivaille"]
         self.path = rospy.get_param('~path', '/home/huier/Projects/comp6211c/catkin_ws/src/picture/orig')
         self.k = rospy.get_param('~k', 2)
-        self.sift = cv2.SIFT()
+        self.threshold = rospy.get_param('~threshold', 10)
+        self.sift = cv2.xfeatures2d.SIFT_create()
         self.bf = cv2.BFMatcher()
         self.kp_list = []
         self.des_list = []
+        self.train()
+        self.listener = tf.TransformListener()
 
     def callback(self, data):
         try:
@@ -38,27 +45,55 @@ class image_sift:
             rospy.loginfo(e)
 
         flipped_image = cv2.flip(cv_image, 1)
-        final_image, center_coordinate = self.predict(flipped_image)
-        cv2.imshow("Image window", final_image)
+        sift_image, kp, max_index = self.match(flipped_image)
+        cv2.imshow("Sift image", sift_image)
         cv2.waitKey(3)
 
-        # self.laser_bool_pub.publish(False)
-
         try:
-            self.image_pub.publish(self.bridge.cv2_to_imgmsg(final_image, "bgr8"))
+            self.image_pub.publish(self.bridge.cv2_to_imgmsg(sift_image, "bgr8"))
         except CvBridgeError as e:
             rospy.loginfo(e)
 
+        # self.laser_bool_pub.publish(False)
+        if kp is not None and max_index is not None:
+            point_cloud_msg = PointCloud()
+            point_cloud_msg.header.frame_id = "camera_link"
+            point_cloud_msg.header.stamp = rospy.Time.now()
+            self.listener.waitForTransform("/camera_link", "/base_link", rospy.Time(), rospy.Duration(10.0))
+            try:
+                now = rospy.Time.now()
+                self.listener.waitForTransform("/camera_link", "/base_link", now, rospy.Duration(10.0))
+                for point in kp:
+                    point32 = Point32()
+                    pointstamped = PointStamped()
+                    pointstamped.header.frame_id = "camera_link"
+                    pointstamped.header.stamp = rospy.Time.now()
+                    pointstamped.point.x = point.pt[0]
+                    pointstamped.point.y = point.pt[1]
+                    pointstamped.point.z = 1.0
+                    p = self.listener.transformPoint("base_link", pointstamped)
+                    point32.x = p.point.x
+                    point32.y = p.point.y
+                    point32.z = p.point.z
+                    point_cloud_msg.points.append(point32)
+
+                self.point_cloud_pub.publish(point_cloud_msg)
+            except(tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
+                rospy.loginfo('error')
+
     def train(self):
-        for label in range(len(self.subjects)):
+        for label in range(5):
             image_path = self.path + "/" + str(label) + ".jpg"
-            img = cv2.imread(image_path, 0)
-            kp, des = self.sift.detectAndCompute(img, None)
+            img = cv2.imread(image_path)
+            gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+            kp, des = self.sift.detectAndCompute(gray, None)
             self.kp_list.append(kp)
             self.des_list.append(des)
 
     def match(self, test_image):
-        test_kp, test_des = self.sift.detectAndCompute(test_image, None)
+        img = test_image.copy()
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        test_kp, test_des = self.sift.detectAndCompute(gray, None)
         matching_result = []
         for i in range(5):
             matches = self.bf.knnMatch(test_des, self.des_list[i], k=self.k)
@@ -68,4 +103,34 @@ class image_sift:
                     good.append([m])
             matching_result.append(len(good))
 
-        if max(matching_result)
+        max_index = None
+        show_kp = None
+        if max(matching_result) > self.threshold:
+            max_index = matching_result.index(max(matching_result))
+            rospy.loginfo('Now we see ' + self.subjects[max_index])
+            matches = self.bf.knnMatch(test_des, self.des_list[max_index], k=self.k)
+            index = []
+            for m, n in matches:
+                if m.distance < 0.75 * n.distance:
+                    index.append(m.queryIdx)
+            show_kp = [test_kp[i] for i in index]
+            cv2.drawKeypoints(img, show_kp, img,
+                              flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+
+        return img, show_kp, max_index
+
+
+def main(args):
+    hehe = image_sift()
+    rospy.init_node('image_sift', anonymous=True)
+    rospy.loginfo('lalalala')
+
+    try:
+        rospy.spin()
+    except KeyboardInterrupt:
+        rospy.loginfo("Shutting down")
+    cv2.destroyAllWindows()
+
+
+if __name__ == '__main__':
+    main(sys.argv)

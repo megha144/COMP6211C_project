@@ -4,7 +4,14 @@
     <include file="$(find hector_mapping)/launch/mapping_default.launch"/>
     <node name="keyboard_controller" pkg="teleop_twist_keyboard" type="teleop_twist_keyboard.py" />
     <node name="rviz" pkg="rviz" type="rviz" args="-d $(find demo)/rviz_cfg/demo.rviz"/>
-    <node name="image_face_recognition" pkg="image_face_recognition" type="image_face_recognition.py">
+    <!--
+    <node name="image_face_recognition" pkg="image_face_recognition" type="image_face_recognition.py" output="screen">
         <param name="path" value="/home/huier/Projects/comp6211c/catkin_ws/src/picture" />
+    </node>
+    -->
+    <node name="image_sift" pkg="image_sift" type="image_sift.py" output="screen">
+        <param name="path" value="/home/huier/Projects/comp6211c/catkin_ws/src/picture/orig" type="str"/>
+        <param name="k" value="2" type="int" />
+        <param name="threshold" value="10" type="int" />
     </node>
 </launch>

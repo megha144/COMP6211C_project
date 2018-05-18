@@ -27,7 +27,7 @@ def draw_text(img, text, x, y):
 class image_face_recognition:
     def __init__(self):
         rospy.loginfo('Initializing image face recognition')
-        self.image_pub = rospy.Publisher("/processed_image", Image, queue_size=1)
+        self.image_pub = rospy.Publisher("/processed_image_face", Image, queue_size=1)
         self.laser_bool_pub = rospy.Publisher("/vrep/laser_switch", Bool, queue_size=1)
 
         self.bridge = CvBridge()
@@ -47,7 +47,7 @@ class image_face_recognition:
 
         flipped_image = cv2.flip(cv_image, 1)
         final_image, center_coordinate = self.predict(flipped_image)
-        cv2.imshow("Image window", final_image)
+        cv2.imshow("Face recognition image", final_image)
         cv2.waitKey(3)
 
         # self.laser_bool_pub.publish(False)
