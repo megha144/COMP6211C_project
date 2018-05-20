@@ -1,21 +1,69 @@
-#!/usr/bin/env python
+
+# coding: utf-8
+
+# In[1]:
+
+
 # adapted from https://www.pyimagesearch.com/2015/09/14/ball-tracking-with-opencv/
+# Kalman filter from https://github.com/Myzhar/simple-opencv-kalman-tracker/blob/master/source/opencv-kalman.cpp
 from collections import deque
 import numpy as np
 import argparse
 import imutils
 import cv2
 
-thresLower = (25, 32, 32)
-thresUpper = (35,255,255)
+
+# In[2]:
+
+
+thresLower = (25, 50, 50)
+thresUpper = (35, 255, 255)
 pts = deque(maxlen=64)
 
 camera = cv2.VideoCapture(0)
+
+
+# In[3]:
+
+
+stateSize = 5 # [x, y, v_x, v_y, r]'
+measSize = 3 # [x, y, r]
+
+kf = cv2.KalmanFilter(stateSize, measSize)
+
+cv2.setIdentity(kf.transitionMatrix, 1.)
+
+kf.measurementMatrix = np.array([
+    [1., 0., 0., 0., 0.],
+    [0., 1., 0., 0., 0.],
+    [0., 0., 0., 0., 1.]
+],np.float32)
+
+kf.processNoiseCov = np.array([
+    [1e-3, 0, 0, 0, 0],
+    [0, 1e-3, 0, 0, 0],
+    [0, 0, 5., 0, 0],
+    [0, 0, 0, 5., 0],
+    [0, 0, 0, 0, 1e-1]
+],np.float32)
+
+cv2.setIdentity(kf.measurementNoiseCov, 1e-1)
+
+ticks = cv2.getTickCount()
+
+
+# In[4]:
+
 
 while True:
     # grab the current frame
     (grabbed, frame) = camera.read()
  
+    precTick = ticks
+    ticks = cv2.getTickCount()
+    
+    dT = (ticks - precTick) / cv2.getTickFrequency()
+    
     # resize the frame, blur it, and convert it to the HSV
     # color space
     # frame = imutils.resize(frame, width=600)
@@ -34,7 +82,8 @@ while True:
     cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL,
         cv2.CHAIN_APPROX_SIMPLE)[-2]
     center = None
- 
+
+    
     # only proceed if at least one contour was found
     if len(cnts) > 0:
         # find the largest contour in the mask, then use
@@ -47,13 +96,29 @@ while True:
  
         # only proceed if the radius meets a minimum size
         if radius > 10:
-            # draw the circle and centroid on the frame,
-            # then update the list of tracked points
-            cv2.circle(frame, (int(x), int(y)), int(radius),
-                (0, 255, 255), 2)
-            cv2.circle(frame, center, 5, (0, 0, 255), -1)
+            mp = np.array([[x], [y], [radius]],np.float32)
+            kf.transitionMatrix = np.array([
+                [1., 0, dT, 0, 0],
+                [0, 1., 0, dT, 0],
+                [0, 0, 1., 0, 0],
+                [0, 0, 0, 1., 0],
+                [0, 0, 0, 0, 1.]
+            ],np.float32)
+            
+            kf.correct(mp)
  
     # update the points queue
+    state = kf.predict()
+            
+    x = state[0]
+    y = state[1]
+    radius = state[4]
+    # draw the circle and centroid on the frame,
+    # then update the list of tracked points
+    cv2.circle(frame, (int(x), int(y)), int(radius),
+        (0, 255, 255), 2)
+    cv2.circle(frame, center, 5, (0, 0, 255), -1)
+        
     pts.appendleft(center)
     
         # loop over the set of tracked points
@@ -70,7 +135,7 @@ while True:
  
     # show the frame to our screen
     cv2.imshow("Frame", cv2.flip(frame,1))
-    cv2.imshow("HSV", cv2.flip(hsv,1))
+#     cv2.imshow("HSV", cv2.flip(hsv,1))
     cv2.imshow("Mask", cv2.flip(mask,1))
     key = cv2.waitKey(1) & 0xFF
 
@@ -78,5 +143,24 @@ while True:
     if key == ord("q"):
         break
 
+
+# In[5]:
+
+
 camera.release()
 cv2.destroyAllWindows()
+
+
+# In[ ]:
+
+
+green = np.uint8([[[0,111,255 ]]])
+cv2.cvtColor(green,cv2.COLOR_BGR2HSV)
+
+
+# In[ ]:
+
+
+green = np.uint8([[[29, 86, 6]]])
+cv2.cvtColor(green,cv2.COLOR_HSV2RGB)
+
