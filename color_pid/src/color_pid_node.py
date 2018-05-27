@@ -13,10 +13,10 @@ class color_pid:
 		self.angular_err = 0
 		self.prev_linear_err = 0
 		self.prev_angular_err = 0
-		self.linear_Kp = rospy.get_param('linear_Kp',5.0)
-		self.linear_Kd = rospy.get_param('linear_Kd',1.0)
-		self.angular_Kp = rospy.get_param('angular_Kp',3.0)
-		self.angular_Kd = rospy.get_param('angular_Kd',0.5)
+		self.linear_Kp = rospy.get_param('linear_Kp',5e-2)
+		self.linear_Kd = rospy.get_param('linear_Kd',0)
+		self.angular_Kp = rospy.get_param('angular_Kp',3e-3)
+		self.angular_Kd = rospy.get_param('angular_Kd',0)
 
 	def calc(self):
 		vx = self.linear_Kp * self.linear_err + self.linear_Kd * (self.linear_err - self.prev_linear_err)
@@ -32,8 +32,8 @@ class color_pid:
 
 	def callback(self,p):
 		# r_sp = 140, x_sp = 256		
-		self.linear_err = p.z + 140
-		self.angular_err = p.y - 256
+		self.linear_err = 140 - p.z
+		self.angular_err = p.x - 256
 		self.calc()
 
 if __name__=="__main__":
