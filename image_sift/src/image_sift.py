@@ -13,9 +13,7 @@ from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
 import os
 import numpy as np
-from geometry_msgs.msg import Point32, PointStamped
 from sensor_msgs.msg import PointCloud
-import tf
 
 
 class image_sift:
@@ -36,7 +34,6 @@ class image_sift:
         self.kp_list = []
         self.des_list = []
         self.train()
-        self.listener = tf.TransformListener()
 
     def callback(self, data):
         try:
@@ -53,33 +50,6 @@ class image_sift:
             self.image_pub.publish(self.bridge.cv2_to_imgmsg(sift_image, "bgr8"))
         except CvBridgeError as e:
             rospy.loginfo(e)
-
-        # self.laser_bool_pub.publish(False)
-        if kp is not None and max_index is not None:
-            point_cloud_msg = PointCloud()
-            point_cloud_msg.header.frame_id = "camera_link"
-            point_cloud_msg.header.stamp = rospy.Time.now()
-            self.listener.waitForTransform("/camera_link", "/base_link", rospy.Time(), rospy.Duration(10.0))
-            try:
-                now = rospy.Time.now()
-                self.listener.waitForTransform("/camera_link", "/base_link", now, rospy.Duration(10.0))
-                for point in kp:
-                    point32 = Point32()
-                    pointstamped = PointStamped()
-                    pointstamped.header.frame_id = "camera_link"
-                    pointstamped.header.stamp = rospy.Time.now()
-                    pointstamped.point.x = point.pt[0]
-                    pointstamped.point.y = point.pt[1]
-                    pointstamped.point.z = 1.0
-                    p = self.listener.transformPoint("base_link", pointstamped)
-                    point32.x = p.point.x
-                    point32.y = p.point.y
-                    point32.z = p.point.z
-                    point_cloud_msg.points.append(point32)
-
-                self.point_cloud_pub.publish(point_cloud_msg)
-            except(tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
-                rospy.loginfo('error')
 
     def train(self):
         for label in range(5):
@@ -123,7 +93,7 @@ class image_sift:
 def main(args):
     hehe = image_sift()
     rospy.init_node('image_sift', anonymous=True)
-    rospy.loginfo('lalalala')
+    rospy.loginfo('image sift node starting...')
 
     try:
         rospy.spin()
