@@ -1,0 +1,17 @@
+<package>
+  <description brief="scene_recog">
+
+     scene_recog
+
+  </description>
+  <author>Kyle Lei</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/scene_recog</url>
+  <depend package="rospy"/>
+  <depend package="opencv3"/>
+  <depend package="sensor_msgs"/>
+
+</package>
+
+
